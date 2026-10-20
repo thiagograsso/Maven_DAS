@@ -1,4 +1,4 @@
-package br.com.sistemas.chamados.dto;
+package br.com.sistemas.das.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
