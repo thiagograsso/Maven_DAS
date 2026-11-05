@@ -1,0 +1,6 @@
+## [chamados-13-4-13-7] Implemented ticket workflows and tests
+- Codebase/domain discoveries: Existing services use constructor injection, JPA repositories, record DTOs, and a global `RegraNegocioException` → HTTP 409 mapping. Spring Boot 4 test annotations live in split test packages. The plan directory was user-provided untracked content and was preserved.
+- Wrong assumptions and corrections: The environment initially appeared to have only Java 21; a separate Temurin 25 installation existed under `C:\Users\Usuario\.jdk\jdk-25\jdk-25.0.5+8`. `JAVA_HOME` itself pointed to a nonexistent `.exe`, so Maven needed an explicit JDK 25 environment.
+- Debugging dead-ends and what worked: One early test compile failed because one-line JSON text blocks are illegal; regular JSON string literals fixed it. `TestRestTemplate` autoconfiguration failed because its `RestTemplateBuilder` dependency was absent, so live endpoint coverage uses `java.net.http.HttpClient` against a random-port Spring Boot server.
+- Techniques/patterns worth reusing: Use `Specification<Chamado>` for optional combined filters, keep paged list DTOs separate from detail DTOs, cap pageable input and allowlist sort properties, and test actual routes with an ephemeral HTTP server.
+- Learnings consumed: []
