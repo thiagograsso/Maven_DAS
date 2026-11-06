@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Implementation tasks for Chamados requirements 13.4–13.7.",
+  "tasks": [
+    {
+      "type": "transform",
+      "id": "001-transform-chamado-status-and-assignment-rules",
+      "description": "Implement ticket assignment and status actions with closed-ticket protections.",
+      "reason": "Requirement 13.4 calls for dedicated assignment/status routes and consistent state-transition behavior.",
+      "requirements": "Traceability: 13.4. Add PATCH /chamados/{id}/atribuir and PATCH /chamados/{id}/status. Reject technician assignment and full ticket updates for FECHADO tickets, populate dataFechamento when transitioning to FECHADO, and return the existing business-rule error response for invalid operations. The exact transition matrix is not specified; use the proposal in plan.md (ABERTO→EM_ATENDIMENTO; EM_ATENDIMENTO→AGUARDANDO_CLIENTE or FECHADO; AGUARDANDO_CLIENTE→EM_ATENDIMENTO or FECHADO; FECHADO terminal) only after confirming it. Test valid and invalid transitions. Do not silently allow reopening or invent additional status rules.",
+      "dependencies": [],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "002-transform-chamado-filtering-pagination",
+      "description": "Add filtered, pageable ticket listings and customer-scoped ticket queries.",
+      "reason": "Requirement 13.5 makes ticket searches practical and discoverable for callers.",
+      "requirements": "Traceability: 13.5. Support GET /chamados with optional status, prioridade, and clienteId filters, including their combinations; add pageable results and sorting; and expose GET /clientes/{id}/chamados. Document query parameters and examples, including GET /chamados?status=ABERTO&prioridade=ALTA&clienteId=42&page=0&size=20&sort=dataAbertura,desc and GET /clientes/42/chamados?page=0&size=20&sort=dataAbertura,desc. Define and document safe defaults, supported sort properties, and a page-size limit; do not make omitted filters mandatory.",
+      "dependencies": [
+        "001-transform-chamado-status-and-assignment-rules"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "003-transform-chamado-comments",
+      "description": "Add ticket comments and include them in ticket detail.",
+      "reason": "Requirement 13.6 provides a persistent conversation record associated with each ticket.",
+      "requirements": "Traceability: 13.6. Add a comment/interaction record containing text, date, author, and its Chamado association; persist the relationship; provide POST /chamados/{id}/comentarios; and list comments in ticket detail. With no authentication or author identity contract present in the current project, represent author according to the agreed API contract rather than assuming an authenticated-user relation. Define comment behavior for closed tickets before implementation. Optional status-change history is out of this scope.",
+      "dependencies": [
+        "002-transform-chamado-filtering-pagination"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "true",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "004-transform-chamado-test-coverage",
+      "description": "Add focused persistence and web-layer tests for Chamado behavior.",
+      "reason": "Requirement 13.7 asks for repository/controller test coverage and a passing Maven test run.",
+      "requirements": "Traceability: 13.7. Add @DataJpaTest repository tests and @WebMvcTest controller tests for ticket creation, request validation, existing duplicate constraints, 404 responses, status/assignment rules, filter combinations, and comments. Preserve the existing CatalogoChamadosIntegrationTests coverage. Do not define or test a new duplicate-ticket policy unless a separate business rule is confirmed. Run the full Maven test suite using the project Maven Wrapper and address failures caused by this scope.",
+      "dependencies": [
+        "003-transform-chamado-comments"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "true",
+        "passUnitTests": "true"
+      }
+    }
+  ],
+  "metadata": {
+    "planName": "chamados-13-4-13-7",
+    "projectName": "das",
+    "language": "java",
+    "createdAt": "2026-11-05T20:27:20.377-03:00",
+    "version": "1.0"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Modernization tasks for the applicable selected assessment categories.",
+  "tasks": [
+    {
+      "type": "transform",
+      "id": "001-transform-jakarta-persistence-to-azure",
+      "description": "Migrate Jakarta JPA to Azure. Addresses issues: Detects usage of Jakarta Persistence (JPA) APIs.",
+      "reason": "The project currently uses Jakarta Persistence and Spring Data JPA with an in-memory H2 database; the selected assessment solution calls for Azure modernization.",
+      "requirements": "Modernize the current Jakarta Persistence-backed data layer for an Azure-supported persistence target while preserving the existing entity, repository, and application behaviors. The Azure persistence service is not specified; confirm it before making service-specific changes and do not assume a target. Account for the transition from the current in-memory H2 configuration.",
+      "dependencies": [],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "002-security-cve-remediation",
+      "description": "Scan project dependencies for known CVEs and remediate identified vulnerabilities.",
+      "reason": "Dependency security review is a required part of every modernization plan.",
+      "requirements": "Scan project dependencies for known CVEs and upgrade vulnerable dependencies to the minimum patched versions. If remediation requires a major-version upgrade, document the affected dependency, current and target versions, and breaking-change risks. Verify the project builds and all existing tests pass after remediation.",
+      "dependencies": [
+        "001-transform-jakarta-persistence-to-azure"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "containerization",
+      "id": "003-containerize-java-application",
+      "description": "Containerize Java Application for Container Readiness. Addresses issues: No Dockerfile found.",
+      "reason": "The assessment found no Dockerfile, and container readiness was explicitly selected.",
+      "requirements": "Prepare the existing Java application for container execution and create the Dockerfile and required container build configuration. Verify the container image builds and the application can start from it. Do not provision Azure resources or deploy the application as part of this task.",
+      "dependencies": [
+        "002-security-cve-remediation"
+      ],
+      "dockerfilePath": "Dockerfile (to be created)",
+      "kbId": "containerization-copilot-agent"
+    }
+  ],
+  "metadata": {
+    "planName": "assessment-selected-categories-20261105195405",
+    "projectName": "das",
+    "language": "java",
+    "createdAt": "2026-11-05T19:57:32.701-03:00",
+    "version": "1.0"
+  }
+}
