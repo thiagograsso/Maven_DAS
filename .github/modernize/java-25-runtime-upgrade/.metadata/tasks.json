@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Focused modernization task plan for upgrading the das Java runtime to Java 25.",
+  "tasks": [
+    {
+      "type": "upgrade",
+      "id": "001-upgrade-java-21-to-25",
+      "description": "Upgrade the Java runtime from 21 to Java 25 LTS. Addresses issues: Java Version is not the latest LTS.",
+      "reason": "The completed assessment identifies Java 21 as behind the latest LTS, Java 25.",
+      "requirements": "Upgrade only the project's Java runtime and required Maven/toolchain configuration from Java 21 to Java 25, the latest LTS identified by the completed assessment. Preserve Spring Boot 4.1.1, application behavior, and unrelated dependencies/configuration. Validate the Maven build and existing unit tests on Java 25; change only what is necessary for Java 25 compatibility.",
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    }
+  ],
+  "metadata": {
+    "planName": "java-25-runtime-upgrade",
+    "projectName": "das",
+    "language": "java",
+    "createdAt": "2026-11-05T19:57:44-03:00",
+    "version": "1.0"
+  }
+}
