@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Chamados</title>
+  <style>
+    /* Estilos Gerais */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f4f6f9;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    /* Grid da Lista de Chamados */
+    .tickets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* Card / Bloquinho do Chamado */
+    .ticket-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border-left: 5px solid #007bff;
+    }
+    .ticket-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .ticket-card .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .status-open { background-color: #ffeeba; color: #856404; }
+    .status-in-progress { background-color: #cce5ff; color: #004085; }
+    .ticket-card h3 {
+      font-size: 16px;
+      color: #222;
+      margin-bottom: 8px;
+    }
+    .ticket-card p {
+      font-size: 13px;
+      color: #666;
+    }
+
+    /* Modal / Pop-up (Escondido por padrão) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Quando ativado via JS */
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Conteúdo do Modal (Centralizado cobrindo parcialmente a tela) */
+    .modal-content {
+      background: #fff;
+      width: 90%;
+      max-width: 600px;
+      max-height: 85vh;
+      border-radius: 10px;
+      padding: 24px;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #888;
+    }
+    .close-btn:hover { color: #000; }
+
+    /* Seções internas do Modal */
+    .modal-header {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .modal-body section {
+      margin-bottom: 16px;
+    }
+    .modal-body h4 {
+      font-size: 14px;
+      color: #444;
+      margin-bottom: 6px;
+    }
+    .history-list {
+      list-style: none;
+      font-size: 13px;
+      color: #555;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .history-list li {
+      margin-bottom: 6px;
+      border-bottom: 1px dashed #ddd;
+      padding-bottom: 4px;
+    }
+    .history-list li:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    /* Formulário de Ações */
+    .actions-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .form-control {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 140px;
+    }
+    .form-control label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .form-control select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .btn-save {
+      margin-top: 16px;
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-save:hover { background-color: #218838; }
+  </style>
+</head>
+<body>
+
+  <h1>Painel de Chamados</h1>
+
+  <!-- Lista de Bloquinhos -->
+  <div class="tickets-grid">
+    <div class="ticket-card" onclick="openModal('101', 'Erro na impressora', 'Aberto', 'Ana Maria')">
+      <span class="tag status-open">Aberto</span>
+      <h3>#101 - Erro na impressora</h3>
+      <p><strong>Solicitante:</strong> Ana Maria</p>
+    </div>
+
+    <div class="ticket-card" style="border-left-color: #28a745;" onclick="openModal('102', 'Sem acesso à VPN', 'Em Andamento', 'Carlos Silva')">
+      <span class="tag status-in-progress">Em Andamento</span>
+      <h3>#102 - Sem acesso à VPN</h3>
+      <p><strong>Solicitante:</strong> Carlos Silva</p>
+    </div>
+  </div>
+
+  <!-- Pop-up / Modal -->
+  <div class="modal-overlay" id="ticketModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      
+      <div class="modal-header">
+        <h2 id="modalTitle">#000 - Título</h2>
+      </div>
+
+      <div class="modal-body">
+        <section>
+          <h4>Descrição do Problema:</h4>
+          <p id="modalDesc" style="font-size: 14px; color: #444;">
+            O usuário relatou falha no serviço ao tentar conectar à rede corporativa.
+          </p>
+        </section>
+
+        <!-- Histórico -->
+        <section>
+          <h4>Histórico de Atualizações:</h4>
+          <ul class="history-list">
+            <li><strong>10/11 14:00:</strong> Chamado aberto por <span id="modalUser">Usuário</span>.</li>
+            <li><strong>10/11 14:15:</strong> Triagem efetuada pela equipe N1.</li>
+          </ul>
+        </section>
+
+        <!-- Ações do Técnico -->
+        <section>
+          <h4>Ações Rápidas:</h4>
+          <div class="actions-group">
+            <div class="form-control">
+              <label for="statusSelect">Alterar Status:</label>
+              <select id="statusSelect">
+                <option value="aberto">Aberto</option>
+                <option value="andamento">Em Andamento</option>
+                <option value="resolvido">Resolvido</option>
+              </select>
+            </div>
+            
+            <div class="form-control">
+              <label for="techSelect">Atribuir Técnico:</label>
+              <select id="techSelect">
+                <option value="">Não atribuído</option>
+                <option value="joao">João (N1)</option>
+                <option value="marcos">Marcos (N2)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-save" onclick="saveChanges()">Salvar Alterações</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript para controlar o Pop-up -->
+  <script>
+    function openModal(id, title, status, user) {
+      document.getElementById('modalTitle').innerText = `#${id} - ${title}`;
+      document.getElementById('modalUser').innerText = user;
+      
+      // Exibe o modal adicionando a classe 'active'
+      document.getElementById('ticketModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('ticketModal').classList.remove('active');
+    }
+
+    // Fechar ao clicar fora do bloco (na parte escura)
+    window.onclick = function(event) {
+      const modal = document.getElementById('ticketModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    function saveChanges() {
+      alert('Alterações salvas com sucesso!');
+      closeModal();
+    }
+  </script>
+</body>
+</html>

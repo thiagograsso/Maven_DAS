@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Atende — Central de chamados</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Atende, início">
+        <span class="brand-mark">A</span>
+        <span>atende<span class="brand-dot">.</span></span>
+      </a>
+
+      <p class="nav-caption">ESPAÇO DE TRABALHO</p>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <button class="nav-link active" type="button" data-page="tickets">
+          <span class="nav-icon" aria-hidden="true">▦</span> Chamados
+        </button>
+        <button class="nav-link" type="button" data-page="new-ticket">
+          <span class="nav-icon" aria-hidden="true">＋</span> Novo chamado
+        </button>
+        <button class="nav-link" type="button" data-page="catalogs">
+          <span class="nav-icon" aria-hidden="true">☷</span> Cadastros
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <span class="status-indicator"></span>
+        <span>Central de atendimento</span>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">GESTÃO DE ATENDIMENTO</p>
+          <h1 id="page-title">Chamados</h1>
+        </div>
+        <button class="button button-primary" type="button" data-go="new-ticket">
+          <span aria-hidden="true">＋</span> Abrir chamado
+        </button>
+      </header>
+
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <section class="page-section" id="tickets-page" aria-labelledby="tickets-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="tickets-heading">Central de chamados</h2>
+            <p>Acompanhe solicitações e atualize o andamento dos atendimentos.</p>
+          </div>
+          <span id="ticket-count" class="count-label">Carregando chamados…</span>
+        </div>
+
+        <form class="filter-bar" id="ticket-filters">
+          <label class="search-field">
+            <span class="sr-only">Buscar nos chamados carregados</span>
+            <span aria-hidden="true">⌕</span>
+            <input id="ticket-search" type="search" placeholder="Buscar por título ou descrição">
+          </label>
+          <label class="filter-select">
+            <span class="sr-only">Filtrar por status</span>
+            <select id="filter-status">
+              <option value="">Todos os status</option>
+              <option value="ABERTO">Aberto</option>
+              <option value="EM_ATENDIMENTO">Em atendimento</option>
+              <option value="AGUARDANDO_CLIENTE">Aguardando cliente</option>
+              <option value="FECHADO">Fechado</option>
+            </select>
+          </label>
+          <label class="filter-select">
+            <span class="sr-only">Filtrar por prioridade</span>
+            <select id="filter-priority">
+              <option value="">Todas as prioridades</option>
+              <option value="BAIXA">Baixa</option>
+              <option value="MEDIA">Média</option>
+              <option value="ALTA">Alta</option>
+              <option value="CRITICA">Crítica</option>
+            </select>
+          </label>
+          <label class="filter-select">
+            <span class="sr-only">Filtrar por cliente</span>
+            <select id="filter-client">
+              <option value="">Todos os clientes</option>
+            </select>
+          </label>
+          <button class="button button-secondary" type="submit">Filtrar</button>
+        </form>
+
+        <div class="tickets-grid" id="tickets-grid" aria-live="polite"></div>
+        <div id="empty-tickets" class="empty-state" hidden>
+          <span class="empty-icon" aria-hidden="true">◇</span>
+          <h3>Nenhum chamado por aqui</h3>
+          <p>Abra um chamado ou ajuste os filtros para ver outros resultados.</p>
+          <button class="button button-primary" type="button" data-go="new-ticket">Abrir chamado</button>
+        </div>
+        <div class="pagination">
+          <button class="button button-secondary" type="button" id="previous-page">← Anterior</button>
+          <span id="page-label">Página 1</span>
+          <button class="button button-secondary" type="button" id="next-page">Próxima →</button>
+        </div>
+      </section>
+
+      <section class="page-section" id="new-ticket-page" aria-labelledby="new-ticket-heading" hidden>
+        <div class="section-heading">
+          <div>
+            <h2 id="new-ticket-heading">Abrir novo chamado</h2>
+            <p>Descreva a solicitação e indique quem fará o atendimento.</p>
+          </div>
+        </div>
+        <form class="form-card" id="new-ticket-form">
+          <div class="form-grid">
+            <label class="field field-wide">
+              <span>Título <span class="required">*</span></span>
+              <input name="titulo" maxlength="150" required placeholder="Ex.: Não consigo acessar o sistema">
+            </label>
+            <label class="field field-wide">
+              <span>Descrição <span class="required">*</span></span>
+              <textarea name="descricao" rows="5" maxlength="2000" required placeholder="Conte o que aconteceu e o que você precisa."></textarea>
+            </label>
+            <label class="field">
+              <span>Prioridade <span class="required">*</span></span>
+              <select name="prioridade" required>
+                <option value="">Selecione</option>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+                <option value="CRITICA">Crítica</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Cliente <span class="required">*</span></span>
+              <select name="clienteId" id="ticket-client" required>
+                <option value="">Selecione um cliente</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Categoria <span class="required">*</span></span>
+              <select name="categoriaId" id="ticket-category" required>
+                <option value="">Selecione uma categoria</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Técnico responsável <span class="required">*</span></span>
+              <select name="tecnicoId" id="ticket-technician" required>
+                <option value="">Selecione um técnico</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-actions">
+            <p class="form-hint">O novo chamado será criado com status Aberto.</p>
+            <button class="button button-primary" type="submit">Criar chamado</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="page-section" id="catalogs-page" aria-labelledby="catalogs-heading" hidden>
+        <div class="section-heading">
+          <div>
+            <h2 id="catalogs-heading">Cadastros</h2>
+            <p>Gerencie clientes, categorias de atendimento e equipe técnica.</p>
+          </div>
+        </div>
+        <div class="catalog-layout">
+          <nav class="catalog-tabs" aria-label="Tipos de cadastro">
+            <button class="catalog-tab active" type="button" data-catalog="clients">Clientes</button>
+            <button class="catalog-tab" type="button" data-catalog="categories">Categorias</button>
+            <button class="catalog-tab" type="button" data-catalog="technicians">Técnicos</button>
+          </nav>
+          <div class="catalog-panel">
+            <div class="catalog-panel-heading">
+              <div>
+                <h3 id="catalog-title">Clientes</h3>
+                <p id="catalog-description">Pessoas que podem abrir chamados.</p>
+              </div>
+              <button class="button button-primary" id="add-catalog-item" type="button">＋ Novo cadastro</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead id="catalog-table-head"></thead>
+                <tbody id="catalog-table-body"></tbody>
+              </table>
+            </div>
+            <div id="empty-catalog" class="empty-inline" hidden>Nenhum cadastro encontrado.</div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="app-footer">Atende <span>·</span> Sistema de gestão de chamados</footer>
+    </main>
+  </div>
+
+  <dialog class="detail-dialog" id="ticket-dialog" aria-labelledby="detail-title">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow" id="detail-reference">DETALHE DO CHAMADO</p>
+        <h2 id="detail-title">Chamado</h2>
+      </div>
+      <button class="icon-button" type="button" data-close-dialog aria-label="Fechar detalhes">×</button>
+    </div>
+    <div id="detail-content" class="detail-content"></div>
+  </dialog>
+
+  <dialog class="detail-dialog compact-dialog" id="catalog-dialog" aria-labelledby="catalog-dialog-title">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">CADASTROS</p>
+        <h2 id="catalog-dialog-title">Novo cadastro</h2>
+      </div>
+      <button class="icon-button" type="button" data-close-dialog aria-label="Fechar formulário">×</button>
+    </div>
+    <form id="catalog-form" class="dialog-form"></form>
+  </dialog>
+</body>
+</html>

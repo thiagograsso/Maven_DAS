@@ -115,6 +115,36 @@ class ChamadosHttpIntegrationTests {
                 "{\"texto\":\"Comentário após fechamento\",\"autor\":\"Ana\"}").statusCode()).isEqualTo(201);
     }
 
+    @Test
+    void atendeCadastroHttpDeClientes() throws Exception {
+        HttpRequest paginaRequest = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/"))
+                .header("Accept", "text/html")
+                .GET()
+                .build();
+        HttpResponse<String> pagina = http.send(paginaRequest, HttpResponse.BodyHandlers.ofString());
+        assertThat(pagina.statusCode()).isEqualTo(200);
+        assertThat(pagina.body()).contains("Atende — Central de chamados", "/app.js", "/styles.css");
+
+        HttpResponse<String> criado = enviar("POST", "/clientes",
+                "{\"nome\":\"Maria Souza\",\"email\":\"maria@example.com\",\"telefone\":\"11999990000\"}");
+        assertThat(criado.statusCode()).isEqualTo(201);
+        assertThat(criado.body()).contains("\"nome\":\"Maria Souza\"", "\"telefone\":\"11999990000\"");
+        Long clienteId = idDaResposta(criado.body());
+
+        assertThat(enviar("GET", "/clientes", null).body()).contains("\"id\":" + clienteId);
+        assertThat(enviar("GET", "/clientes/" + clienteId, null).statusCode()).isEqualTo(200);
+
+        HttpResponse<String> atualizado = enviar("PUT", "/clientes/" + clienteId,
+                "{\"nome\":\"Maria Silva\",\"email\":\"maria@example.com\",\"telefone\":\"11888880000\"}");
+        assertThat(atualizado.statusCode()).isEqualTo(200);
+        assertThat(atualizado.body()).contains("\"nome\":\"Maria Silva\"", "\"telefone\":\"11888880000\"");
+
+        assertThat(enviar("POST", "/clientes",
+                "{\"nome\":\"Outro Cliente\",\"email\":\"maria@example.com\"}").statusCode()).isEqualTo(409);
+        assertThat(enviar("DELETE", "/clientes/" + clienteId, null).statusCode()).isEqualTo(204);
+        assertThat(enviar("GET", "/clientes/" + clienteId, null).statusCode()).isEqualTo(404);
+    }
+
     private HttpResponse<String> enviar(String method, String path, String json) throws Exception {
         HttpRequest.Builder request = HttpRequest.newBuilder(
                 URI.create("http://localhost:" + port + path)).header("Accept", "application/json");
