@@ -13,22 +13,12 @@ import br.com.sistemas.das.exception.RegraNegocioException;
 import br.com.sistemas.das.repository.ClienteRepository;
 
 @Service
+@Transactional
 public class ClienteService {
-
     private final ClienteRepository repository;
 
     public ClienteService(ClienteRepository repository) {
         this.repository = repository;
-    }
-
-    @Transactional
-    public ClienteResponse criar(ClienteRequest dto) {
-        if (repository.existsByEmail(dto.email())) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
-        }
-        
-        Cliente salvo = repository.save(new Cliente(dto.nome(), dto.email(), dto.telefone()));
-        return ClienteResponse.de(salvo);
     }
 
     @Transactional(readOnly = true)
@@ -38,30 +28,39 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public ClienteResponse buscar(Long id) {
-        return ClienteResponse.de(buscarEntity(id));
+        return ClienteResponse.de(obter(id));
     }
 
-    @Transactional
-    public ClienteResponse atualizar(Long id, ClienteRequest dto) {
-        Cliente cliente = buscarEntity(id);
-        if (repository.existsByEmailAndIdNot(dto.email(), id)) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
-        }
-        
-        cliente.setNome(dto.nome());
-        cliente.setEmail(dto.email());
-        cliente.setTelefone(dto.telefone());
-        return ClienteResponse.de(cliente);
+    public ClienteResponse criar(ClienteRequest request) {
+        validarEmailDuplicado(request.email(), null);
+        return ClienteResponse.de(repository.save(
+                new Cliente(request.nome(), request.email(), request.telefone())));
     }
 
-    @Transactional
+    public ClienteResponse atualizar(Long id, ClienteRequest request) {
+        Cliente cliente = obter(id);
+        validarEmailDuplicado(request.email(), id);
+        cliente.setNome(request.nome());
+        cliente.setEmail(request.email());
+        cliente.setTelefone(request.telefone());
+        return ClienteResponse.de(repository.save(cliente));
+    }
+
     public void excluir(Long id) {
-        repository.delete(buscarEntity(id));
+        repository.delete(obter(id));
     }
 
-    private Cliente buscarEntity(Long id) {
+    private Cliente obter(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException(
-                        "Cliente " + id + " não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado: " + id));
+    }
+
+    private void validarEmailDuplicado(String email, Long id) {
+        boolean duplicado = id == null
+                ? repository.existsByEmail(email)
+                : repository.existsByEmailAndIdNot(email, id);
+        if (duplicado) {
+            throw new RegraNegocioException("Já existe um cliente com esse e-mail");
+        }
     }
 }
